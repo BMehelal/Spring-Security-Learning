@@ -1,7 +1,10 @@
-package com.Config;
+package com.brandon.Config;
 
 import java.io.IOException;
 
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -16,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+    private final UserDetailsService userDetailService; 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain) throws ServletException, IOException{
@@ -28,5 +32,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
                 jwt = authHeader.substring(7);
                 userEmail = jwtService.extractUsername(jwt);// extract the userEmail from JWT token
+                if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    UserDetails userDetails = this.userDetailService.loadUserByUsername(userEmail);
+                }
             }
 }
